@@ -1,49 +1,37 @@
 <template>
   <div id="app">
     <div class="calculator">
-      <div class="input-block">
 
-        <label for="gewinn">Gewinn aus Gewerbebetrieb</label>
-        <input
-          ref="gewinn"
-          id="gewinn"
-          type="text"
-          inputmode="decimal"
-          v-model="gewinn"
-          @keyup.enter="validate()"
-          autofocus
-        ><span>€</span>
+      <InputComponent
+        ref="gewinn"
+        label="Gewinn aus Gewerbebetrieb"
+        unit="€"
+        v-model="gewinn"
+        @validate="validate()"
+      />
+      <InputComponent
+        ref="hinzurechnung"
+        label="Hinzurech&shy;nungs&shy;betrag"
+        unit="€"
+        v-model="hinzurechnung"
+        @validate="validate()"
+      />
+      <InputComponent
+        ref="kuerzung"
+        label="Kürzungsbetrag"
+        unit="€"
+        v-model="kuerzung"
+        @validate="validate()"
+      />
+      <InputComponent
+        ref="hebesatz"
+        label="Hebesatz"
+        unit="%"
+        v-model="hebesatz"
+        @validate="validate()"
+      />
 
-        <label for="hinzurechnung">Hinzurech&shy;nungs&shy;betrag</label>
-        <input
-          ref="hinzurechnung"
-          id="hinzurechnung"
-          type="text"
-          inputmode="decimal"
-          v-model="hinzurechnung"
-          @keyup.enter="validate()"
-        ><span>€</span>
-
-        <label for="kuerzung">Kürzungsbetrag</label>
-        <input
-          ref="kuerzung"
-          id="kuerzung"
-          type="text"
-          inputmode="decimal"
-          v-model="kuerzung"
-          @keyup.enter="validate()"
-        ><span>€</span>
-
-        <label for="hebesatz">Hebesatz</label>
-        <input
-          ref="hebesatz"
-          id="hebesatz"
-          type="text"
-          inputmode="decimal"
-          v-model="hebesatz"
-          @keyup.enter="validate()"
-        ><span>%</span>
-
+      <div class="legal-input">
         <label for="rechtsform">Rechtsform</label>
         <select id="rechtsform" v-model="rechtsform">
           <option disabled value>Bitte auswählen</option>
@@ -53,49 +41,106 @@
           <option>rechtsfähiger Verein</option>
         </select>
       </div>
+
       <div v-if="profitMissing" class="warning">Bitte geben Sie Ihren Gewinn an</div>
       <div v-if="invalidInput" class="warning">Bitte überprüfen Sie Ihre Eingabe</div>
+
       <button class="calc-btn" @click="validate()">Berechnen</button>
       
       <div v-if="calculated && !invalidInput && !profitMissing" class="output-block">
-        <span>Gewinn aus Gewerbe</span>
-        <span class="result">{{ germanize(cleanInput(gewinn)) }} €</span>
 
-        <span>Hinzurech&shy;nungs&shy;betrag</span>
-        <span class="result">+ {{ germanize(cleanInput(hinzurechnung)) }} €</span>
-
-        <span>Kürzungsbetrag</span>
-        <span class="result">&minus; {{ germanize(cleanInput(kuerzung)) }} €</span>
-
-        <span class="last-calc">Freibetrag</span>
-        <span class="result">&minus; {{ germanize(freibetrag) }} €</span>
-
-        <span>Maßgebender Gewerbeertrag</span>
-        <span class="result">{{ germanize(gewerbeErtrag) }} €</span>
-
-        <span class="last-calc">Gewerbest.-Messzahl</span>
-        <span class="result">&times; 3,50 %</span>
-
-        <span>Steuer&shy;mess&shy;betrag</span>
-        <span class="result">{{ germanize(steuerMessBetrag) }} €</span>
-
-        <span>Hebesatz</span>
-        <span class="result">&times; {{ germanize(cleanInput(hebesatz)) }} %</span>
-
-        <span class="final-result">Gewerbe&shy;steuer</span>
-        <span class="result">{{ germanize(gewerbeSteuer) }} €</span>
+        <OutputComponent
+          :value="gewinn"
+          label="Gewinn aus Gewerbe"
+          unit="€"
+          :clean="false"
+        />
+        <OutputComponent
+          :value="hinzurechnung"
+          v-model="hinzurechnung"
+          label="Hinzurech&shy;nungs&shy;betrag"
+          unit="€"
+          operator="&plus;"
+          :clean="false"
+        />
+        <OutputComponent
+          :value="kuerzung"
+          label="Kürzungsbetrag"
+          unit="€"
+          operator="&minus;"
+          :clean="false"
+        />
+        <OutputComponent
+          :value="String(freibetrag)"
+          label="Freibetrag"
+          unit="€"
+          operator="&minus;"
+          :clean="true"
+          labelClass="last-calc"
+        />
+        <OutputComponent
+          :value="String(gewerbeErtrag)"
+          label="Maßgebender Gewerbeertrag"
+          unit="€"
+          :clean="true"
+        />
+        <OutputComponent
+          value="3,50"
+          label="Gewerbest.-Messzahl"
+          unit="%"
+          operator="&times;"
+          labelClass="last-calc"
+        />
+        <OutputComponent
+          :value="String(steuerMessBetrag)"
+          label="Steuer&shy;mess&shy;betrag"
+          unit="€"
+          :clean="true"
+        />
+        <OutputComponent
+          :value="hebesatz"
+          label="Hebesatz"
+          unit="%"
+          operator="&times;"
+          :clean="false"
+          labelClass="last-calc"
+        />
+        <OutputComponent
+          :value="String(gewerbeSteuer)"
+          label="Gewerbe&shy;steuer"
+          unit="€"
+          :clean="true"
+          labelClass="final-result"
+        />
       </div>
-
     </div>
   </div>
 
 </template>
 
 <script>
+import InputComponent from './components/InputComponent.vue'
+import OutputComponent from './components/OutputComponent.vue'
+
+const freiBetraege = {
+  "Einzelunternehmen": 24500,
+  "Personengesellschaft": 24500,
+  "Kapitalgesellschaft": 0,
+  "rechtsfähiger Verein": 5000
+}
+
+function cleanNumber(input) {
+  if (input === "") { input = "0" }
+  input = input.replaceAll(" ", "")
+  input = input.replaceAll(",", ".")
+  return parseFloat(input)
+}
 
 export default {
   name: 'App',
   components: {
+    InputComponent,
+    OutputComponent
   },
   data() {
     return {
@@ -119,10 +164,22 @@ export default {
       this.invalidInput = false
 
       const fieldsToValidate= [
-        { value: this.gewinn, inputField: this.$refs.gewinn },
-        { value: this.hinzurechnung, inputField: this.$refs.hinzurechnung },
-        { value: this.kuerzung, inputField: this.$refs.kuerzung },
-        { value: this.hebesatz, inputField: this.$refs.hebesatz }
+        {
+          value: this.gewinn,
+          inputField: this.$refs.gewinn.$refs.input
+        },
+        {
+          value: this.hinzurechnung,
+          inputField: this.$refs.hinzurechnung.$refs.input
+        },
+        {
+          value: this.kuerzung,
+          inputField: this.$refs.kuerzung.$refs.input
+        },
+        {
+          value: this.hebesatz,
+          inputField: this.$refs.hebesatz.$refs.input
+        }
       ]
 
       const re = /^\d*[,.]?\d*$/
@@ -136,42 +193,34 @@ export default {
       })
 
       if (!this.gewinn) {
-        this.$refs.gewinn.classList.add("invalid")
+        this.$refs.gewinn.$refs.input.classList.add("invalid")
         this.profitMissing = true
       }
 
       if (!this.invalidInput && !this.profitMissing) {
+        this.gewinn = this.gewinn.replaceAll(" ", "")
+        this.hinzurechnung = this.hinzurechnung.replaceAll(" ", "")
+        this.kuerzung = this.kuerzung.replaceAll(" ", "")
+        this.hebesatz = this.hebesatz.replaceAll(" ", "")
         this.calculate()
       }
 
     },
     calculate() {
-      const freiBetraege = {
-        "Einzelunternehmen": 24500,
-        "Personengesellschaft": 24500,
-        "Kapitalgesellschaft": 0,
-        "rechtsfähiger Verein": 5000
-      }
-      
       this.freibetrag = freiBetraege[this.rechtsform] ? freiBetraege[this.rechtsform] : 0
-      this.gewerbeErtrag = this.cleanInput(this.gewinn) + this.cleanInput(this.hinzurechnung) - this.cleanInput(this.kuerzung) - this.freibetrag
-      this.steuerMessBetrag = Math.floor(this.gewerbeErtrag * 0.035)
       this.hebesatz = this.hebesatz ? this.hebesatz : "200"
-      this.gewerbeSteuer = this.steuerMessBetrag * (this.cleanInput(this.hebesatz) / 100)
+
+      this.gewerbeErtrag =
+          cleanNumber(this.gewinn)
+        + cleanNumber(this.hinzurechnung)
+        - cleanNumber(this.kuerzung)
+        - this.freibetrag
+
+      this.steuerMessBetrag = Math.floor(this.gewerbeErtrag * 0.035)
+      this.gewerbeSteuer = this.steuerMessBetrag * (cleanNumber(this.hebesatz) / 100)
 
       this.calculated = true
     },
-
-    cleanInput(input) {
-      input = input ? input : "0"
-      input = input.replaceAll(" ", "")
-      input = input.replaceAll(",", ".")
-      return parseFloat(input)
-    },
-
-    germanize(number) {
-      return number.toFixed(2).replace(".", ",")      
-    }
   }
 }
 </script>
@@ -188,6 +237,7 @@ export default {
 #app {
   --clr-text: rgba(74,74,74,1);
   --clr-accent: hsl(195, 81%, 41.2%);
+
   display: grid;
   place-content: center;
   font-family: "Open Sans", sans-serif;
@@ -202,25 +252,15 @@ export default {
   justify-content: center;
 }
 
-.input-block,
-.output-block {
+.legal-input {
   display: grid;
   grid-template-columns: minmax(auto, 3fr) minmax(17ch, 2fr) 1ch;
-  row-gap: 0.75rem;
-  margin-bottom: 1rem;
-  width: 100%;
-}
-
-.input-block {
   align-items: center;
+  width: 100%;
+  margin-bottom: 2rem;
 }
 
-.input-block label {
-  margin-right: 0.5rem;
-}
-
-.input-block input,
-.input-block select {
+.legal-input select {
   font-family: inherit;
   font-size: inherit;
   background: rgba(10, 36, 51, 0.1);
@@ -230,29 +270,15 @@ export default {
   padding-right: 0.5rem;
   text-align: right;
   height: 2.2rem;
-}
+  appearance: none;
 
-/* no <select>-text-align in Safari :( */
-.input-block select {
+  /* no <select>-text-align in Safari :( */
   padding-left: 0.75rem;
 }
 
-.input-block select {
-  appearance: none;
-}
-
-.input-block input:focus,
-.input-block select:focus {
+.legal-input select:focus {
   outline: none;
   box-shadow: 0 0 0 1px var(--clr-accent);
-}
-
-.input-block span {
-  font-size: inherit;
-}
-
-input.invalid {
-  box-shadow: 0 0 0 2px tomato !important;
 }
 
 .warning {
@@ -273,26 +299,8 @@ input.invalid {
 }
 
 .output-block {
-  grid-template-columns: minmax(auto, 3fr) minmax(20ch, 2fr);
+  width: 100%;
   margin-top: 3rem;
-  align-items: bottom;
 }
 
-.result {
-  font-family: "Azeret Mono", monospace;
-  text-align: right;
-}
-
-.last-calc,
-.last-calc + span {
-  padding-bottom: 0.25rem;
-  border-bottom: 1px solid #dedede;
-  margin-bottom: 0.25rem;
-}
-
-.final-result,
-.final-result + span {
-  font-size: 110%;
-  font-weight: bold;
-}
 </style>
