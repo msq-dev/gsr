@@ -4,7 +4,7 @@
       <span v-html="label"></span>
     </span>
     <span class="result">
-      <span v-html="operator"></span> {{ germanize(clean ? value : cleanString(value)) }} {{ unit }}
+      <span v-html="operator"></span> {{ germanize(value) }} {{ unit }}
     </span>
   </div>
 </template>
@@ -13,23 +13,17 @@
 export default {
   name: "OutputComponent",
   props: {
-    value: String,
+    value: [String, Number],
     label: String,
     unit: String,
     operator: String,
-    clean: Boolean,
     labelClass: String
   },
   methods: {
-    cleanString(input) {
-      if (input === "") { input = "0" }
-      input = input.replaceAll(" ", "")
-      input = input.replaceAll(",", ".")
-      return input
-    },
-
-    germanize(number) {
-      return parseFloat(number).toFixed(2).replace(".", ",")
+    germanize(input) {
+      input = String(input).replace(",", ".")
+      input = input !== "" ? input : "0"
+      return parseFloat(input).toFixed(2).replace(".", ",")
     }
   }
 }
