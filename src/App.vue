@@ -206,7 +206,6 @@ export default {
       this.invalidInput = false
 
       const inputComponents = Object.entries(this.$refs)
-      console.log(this.$refs);
       const re = /^\d*[,.]?\d*$/
 
       inputComponents.forEach(component => {
