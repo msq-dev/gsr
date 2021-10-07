@@ -1,10 +1,14 @@
 <template>
   <div class="input-component">
 
-    <label :for="label">
+    <label class="input-label" :for="label">
       <span v-html="label"></span>
-      <span v-if="hasInfo" class="tooltip-icon" @click="showInfo = true">
+      <span v-if="hasInfo"
+        class="info-icon"
+        @click="showInfo = true"
+      >
         <span v-html="infoIcon"></span>
+        <!-- <font-awesome-icon icon="info" /> -->
       </span>
     </label>
 
@@ -83,7 +87,7 @@ export default {
 <style>
 .input-component {
   display: grid;
-  grid-template-columns: minmax(auto, 3fr) minmax(17ch, 2fr) 1ch;
+  grid-template-columns: minmax(auto, 3fr) minmax(15ch, 2fr) 1ch;
   align-items: center;
   margin-bottom: 1rem;
   width: 100%;
@@ -109,16 +113,25 @@ export default {
 .input-field.invalid {
   outline: none;
   box-shadow: 0 0 0 1px var(--clr-warning);
-  /* border: 1px solid var(--clr-warning) !important; */
+  /* border: 1px solid var(--clr-warning); */
 }
 
 .input-component select {
   appearance: none;
 }
 
-.tooltip-icon svg {
+
+
+.info-icon svg {
+  /* display: inline-block; */
+  /* color: var(--clr-accent); */
+  margin-left: 0.3rem;
+  /* font-size: 60%; */
+  width: 1rem;
+  /* transform: translateY(-70%); */
+
   fill: var(--clr-accent);
-  width: 1rem; 
+  cursor: pointer;
 }
 
 .fade-enter-active, .fade-leave-active {

@@ -13,7 +13,7 @@
 export default {
   name: "OutputComponent",
   props: {
-    value: [String, Number],
+    value: [String, Number, Boolean],
     label: String,
     unit: String,
     operator: String,
@@ -22,7 +22,7 @@ export default {
   methods: {
     germanize(input) {
       input = String(input).replace(",", ".")
-      input = input !== "" ? input : "0"
+      input = input || "0"
       return parseFloat(input).toFixed(2).replace(".", ",")
     }
   }
@@ -32,7 +32,7 @@ export default {
 <style scoped>
 .output-component {
   display: grid;
-  grid-template-columns: minmax(auto, 3fr) minmax(20ch, 2fr);
+  grid-template-columns: minmax(auto, 3fr) minmax(15ch, 2fr);
   margin-bottom: 1rem;
   width: 100%;
   align-items: bottom;  

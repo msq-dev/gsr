@@ -16,23 +16,28 @@
         @validate="validate"
       />
 
-      <div v-if="profitMissing" class="warning">Bitte geben Sie Ihren Gewinn an</div>
-      <div v-if="invalidInput" class="warning">Bitte überprüfen Sie Ihre Eingabe</div>
+      <transition name="slide">
+        <div v-if="profitMissing" class="warning">Bitte geben Sie Ihren Gewinn an</div>
+        <div v-if="invalidInput" class="warning">Bitte überprüfen Sie Ihre Eingabe</div>
+      </transition>
 
-      <button class="calc-btn" @click="validate">Berechnen</button>
-      
-      <div v-if="calculated && !invalidInput && !profitMissing" class="output-block">
+      <button class="btn calc-btn" @click="validate">Berechnen</button>
 
-        <OutputComponent v-for="output in outputs"
-          :key="output.label"
-          :value="$data[output.name]"
-          :label="output.label"
-          :unit="output.unit"
-          :operator="output.operator"
-          :labelClass="output.labelClass"
-        />
+      <transition name="slide">
+        <div v-if="calculated && !invalidInput && !profitMissing" class="output-block">
 
-      </div>
+          <OutputComponent v-for="output in outputs"
+            :key="output.label"
+            :value="$data[output.name]"
+            :label="output.label"
+            :unit="output.unit"
+            :operator="output.operator"
+            :labelClass="output.labelClass"
+          />
+
+        </div>
+      </transition>
+
     </div>
   </div>
 
@@ -72,14 +77,14 @@ export default {
           value: this.hinzurechnung,
           unit: "€",
           hasInfo: true,
-          label: "Hinzu&shy;rech&shy;nungs&shy;betrag",
+          label: "Hinzurech&shy;nungsbetrag",
         },
         {
           name: "kuerzung",
           value: this.kuerzung,
           unit: "€",
           hasInfo: true,
-          label: "Kürzungsbetrag",
+          label: "Kürzungs&shy;betrag",
         },
         {
           name: "hebesatz",
@@ -185,9 +190,7 @@ export default {
       gewerbeErtrag: 0,
       steuerMessBetrag: 0,
       steuerMessZahl: 3.5,
-      gewerbeSteuer: 0,
-
-      infoShown: false,
+      gewerbeSteuer: 0
     }
   },
 
@@ -203,10 +206,11 @@ export default {
       this.invalidInput = false
 
       const inputComponents = Object.entries(this.$refs)
+      console.log(this.$refs);
       const re = /^\d*[,.]?\d*$/
 
       inputComponents.forEach(component => {
-        const inputField = component[1][0].$refs.input
+        const inputField = component[1][0].$refs.input || null
         inputField.classList.remove("invalid")
 
         if (!re.test(removeWhitespace(this.$data[component[0]]))) {
@@ -249,13 +253,13 @@ export default {
       this.gewerbeSteuer = this.gewerbeSteuer > 0 ? this.gewerbeSteuer : 0
 
       this.calculated = true
-    }
+    },
   }
 }
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@300&family=Encode+Sans:wght@300&family=Open+Sans:wght@300&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@300&family=Encode+Sans:wght@300&family=Open+Sans:wght@300&display=swap'); */
 
 *,
 *::before,
@@ -264,14 +268,16 @@ export default {
 }
 
 #app {
-  --clr-text: rgba(74,74,74,1);
-  --clr-accent: hsl(195, 81%, 41.2%);
+  --clr-text: rgba(74, 74, 74);
+  --clr-accent: rgb(20, 147, 190);
   --clr-warning: tomato;
 
   display: grid;
   place-content: center;
   font-family: "Open Sans", sans-serif;
   color: var(--clr-text);
+  height: fit-content;
+  margin-top: 1rem;
 }
 
 .calculator {
@@ -287,7 +293,7 @@ export default {
   margin-bottom: 1rem;
 }
 
-.calc-btn {
+.btn {
   padding: 1rem 2rem;
   font-family: inherit;
   font-size: inherit;
@@ -298,8 +304,25 @@ export default {
   cursor: pointer;
 }
 
+.calc-btn {
+  margin-top: 1rem;
+}
+
 .output-block {
-  width: 100%;
   margin-top: 3rem;
 }
+
+.slide-enter-active {
+  transition: opacity 0.3s, max-height 0.5s;
+}
+
+.slide-leave-active {
+  transition: opacity 0.05s, max-height 0.3s;  
+}
+
+.slide-enter, .slide-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
 </style>
