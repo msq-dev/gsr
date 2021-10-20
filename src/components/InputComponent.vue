@@ -1,16 +1,16 @@
 <template>
   <div class="input-component">
-
-    <label class="input-label" :for="label">
-      <span v-html="label"></span>
+    <span>
+      <label class="input-label" :for="label">
+        <span v-html="label"></span>
+      </label>
       <span v-if="hasInfo"
         class="info-icon"
         @click="showInfo = true"
       >
         <span v-html="infoIcon"></span>
-        <!-- <font-awesome-icon icon="info" /> -->
       </span>
-    </label>
+    </span>
 
     <select v-if="selectableInput"
       class="input-field"
@@ -123,13 +123,8 @@ export default {
 
 
 .info-icon svg {
-  /* display: inline-block; */
-  /* color: var(--clr-accent); */
   margin-left: 0.3rem;
-  /* font-size: 60%; */
   width: 1rem;
-  /* transform: translateY(-70%); */
-
   fill: var(--clr-accent);
   cursor: pointer;
 }
